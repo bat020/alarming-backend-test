@@ -9,17 +9,13 @@
 
     <h1>Alarming backend test</h1>
 
-    <p id='login-status'>Login status goes here</p>
+    <p id='status-message'>status message goes here</p>
 
     <p><button id='logout-button'>log out</button></p>
 
-    <p><input id='login-email' type='email' placeholder='login email' autofocus autocomplete='off'></p>
-    <p><input id='login-password' type='password' placeholder='login password' autocomplete='off'></p>
-    <p><button id='login-button'>log in</button></p>
-
-    <p><input id='signup-email' type='email' placeholder='signup name' autocomplete='off'></p>
-    <p><input id='signup-password' type='password' placeholder='signup password' autocomplete='off'></p>
-    <p><button id='signup-button'>signup</button></p>
+    <p><input id='email' type='email' placeholder='email' autofocus autocomplete='off'></p>
+    <p><input id='password' type='password' placeholder='password' autocomplete='off'></p>
+    <p><button id='login-button'>log in</button> or <button id='signup-button'>signup</button></p>
 
     <script>
 
@@ -31,9 +27,10 @@
 
       $('#login-button').click(function (){
         ref.authWithPassword({
-          email: $('#login-email').val(),
-          password: $('#login-password').val()
+          email: $('#email').val(),
+          password: $('#password').val()
         }, authHandler);
+        clearLoginForm();
       });
 
       $('#logout-button').click(function (){
@@ -42,48 +39,53 @@
 
       $('#signup-button').click(function (){
         ref.createUser({
-          email: $('#signup-email').val(),
-          password: $('#signup-password').val()
-        }, function(error, userData) {
-          if (error) {
-            switch (error.code) {
-              case "EMAIL_TAKEN":
-                console.log("The new user account cannot be created because the email is already in use.");
-                break;
-              case "INVALID_EMAIL":
-                console.log("The specified email is not a valid email.");
-                break;
-              default:
-                console.log("Error creating user:", error);
-            }
-          } else {
-            console.log("Successfully created user account with uid:", userData.uid);
-            ref.authWithPassword({
-              email: $('#signup-email').val(),
-              password: $('#signup-password').val()
-            }, authHandler);
-
-          }
-        });
+          email: $('#email').val(),
+          password: $('#password').val()
+        }, signupHandler);
       });
-
-
 
       function authDataCallback(authData) {
         if (authData) {
-          $('#login-status').text(authData.uid + " is logged in with " + authData.provider);
+          $('#status-message').text(authData.uid + " is logged in with " + authData.provider);
         } else {
-          $('#login-status').text("user is logged out");
+          $('#status-message').text("user is logged out");
         }
-      }
+      };
 
       function authHandler(error, authData) {
         if (error) {
-          console.log("Login Failed!", error);
+          console.log("Login failed!", error);
         } else {
           console.log("Authenticated successfully with payload:", authData);
         }
+      };
+
+      function signupHandler(error, userData) {
+        if (error) {
+          switch (error.code) {
+            case "EMAIL_TAKEN":
+              console.log("The new user account cannot be created because the email is already in use.");
+              break;
+            case "INVALID_EMAIL":
+              console.log("The specified email is not a valid email.");
+              break;
+            default:
+              console.log("Error creating user:", error);
+          }
+        } else {
+          console.log("Successfully created user account with uid:", userData.uid);
+          ref.authWithPassword({
+            email: $('#email').val(),
+            password: $('#password').val()
+          }, authHandler);
+          clearLoginForm();
+        }
       }
+
+      function clearLoginForm() {
+        $('#email').val("");
+        $('#password').val("");
+      };
 
     </script>
   </body>
