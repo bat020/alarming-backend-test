@@ -13,7 +13,8 @@
 
     <p><button id='logout-button'>log out</button></p>
 
-    <p><input id='email' type='email' placeholder='email' autofocus autocomplete='off'></p>
+    <p><input id='username' type='text' placeholder='username' autofocus autocomplete='off'></p>
+    <p><input id='email' type='email' placeholder='email' autocomplete='off'></p>
     <p><input id='password' type='password' placeholder='password' autocomplete='off'></p>
     <p><button id='login-button'>log in</button> or <button id='signup-button'>signup</button></p>
 
@@ -23,18 +24,15 @@
       var usersRef = ref.child('users');
       var eventsRef = ref.child('events');
 
-      ref.onAuth(authDataCallback);
+      $('#logout-button').click(function (){
+        ref.unauth();
+      });
 
       $('#login-button').click(function (){
         ref.authWithPassword({
           email: $('#email').val(),
           password: $('#password').val()
         }, authHandler);
-        clearLoginForm();
-      });
-
-      $('#logout-button').click(function (){
-        ref.unauth();
       });
 
       $('#signup-button').click(function (){
@@ -44,47 +42,61 @@
         }, signupHandler);
       });
 
+      ref.onAuth(authDataCallback);
+
+      function authHandler(error, authData) {
+        // console.log('authHandler has been triggered');
+        if (error) {
+          $('#status-message').text("Login failed! " + error);
+        } else {
+          // $('#status-message').text("Authenticated successfully as " + authData.uid);
+          clearLoginForm();
+          saveNewUser(authData);
+        }
+      };
+
+      function signupHandler(error, userData) {
+        console.log('signupHandler has been triggered');
+        if (error) {
+          switch (error.code) {
+            case "EMAIL_TAKEN":
+              $('#status-message').text("The new user account cannot be created because the email is already in use.");
+              break;
+            case "INVALID_EMAIL":
+              $('#status-message').text("The specified email is not a valid email.");
+              break;
+            default:
+              $('#status-message').text("Error creating user:", error);
+          }
+        } else {
+          $('#status-message').text("Successfully created user account with uid:", userData.uid);
+          ref.authWithPassword({
+            email: $('#email').val(),
+            password: $('#password').val()
+          }, authHandler);
+        }
+      }
+
       function authDataCallback(authData) {
         if (authData) {
-          $('#status-message').text(authData.uid + " is logged in with " + authData.provider);
+          usersRef.child(authData.uid).on("value", function(snapshot) {
+              $('#status-message').text(snapshot.val().username + " is logged in");
+          });
         } else {
           $('#status-message').text("user is logged out");
         }
       };
 
-      function authHandler(error, authData) {
-        if (error) {
-          console.log("Login failed!", error);
-        } else {
-          console.log("Authenticated successfully with payload:", authData);
-        }
-      };
-
-      function signupHandler(error, userData) {
-        if (error) {
-          switch (error.code) {
-            case "EMAIL_TAKEN":
-              console.log("The new user account cannot be created because the email is already in use.");
-              break;
-            case "INVALID_EMAIL":
-              console.log("The specified email is not a valid email.");
-              break;
-            default:
-              console.log("Error creating user:", error);
-          }
-        } else {
-          console.log("Successfully created user account with uid:", userData.uid);
-          ref.authWithPassword({
-            email: $('#email').val(),
-            password: $('#password').val()
-          }, authHandler);
-          clearLoginForm();
-        }
-      }
-
       function clearLoginForm() {
         $('#email').val("");
         $('#password').val("");
+      };
+
+      function saveNewUser(authData) {
+        usersRef.child(authData.uid).set({
+          email: authData.password.email,
+          username: $('#username').val()
+        });
       };
 
     </script>

@@ -26,6 +26,12 @@ input[type=email]{
 	line-height: 1.5;
 }
 
+input[type=text]{
+	font: 20px 'Courier New', monospace;
+	padding:5px 10px;
+	line-height: 1.5;
+}
+
 input[type=password]{
 	font: 20px 'Courier New', monospace;
 	padding:5px 10px;
