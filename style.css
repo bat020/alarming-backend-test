@@ -3,7 +3,11 @@ body{
 	max-width: 800px;
 	background-color: #eeeeee;
 	color: #222222;
-	}
+}
+
+hr{
+	margin-top: 30px;
+}
 
 h1{
 	font: 36px 'Courier New', monospace;
@@ -12,7 +16,7 @@ h1{
 }
 
 p{
-	font: 20px 'Courier', monospace;
+	font: 20px 'Courier New', monospace;
 	line-height: 1.5;
 }
 
